@@ -1,0 +1,93 @@
+# Crawl4AI Configuration for II-Agent MCP Universal Connector
+# This file configures the Crawl4AI integration for automatic API discovery
+
+crawl:
+  # General crawl settings
+  settings:
+    user_agent: "II-Agent-MCP-Crawler/1.0"
+    request_delay: 1.0  # Delay between requests in seconds
+    max_depth: 3        # Maximum crawl depth
+    timeout: 30         # Request timeout in seconds
+    respect_robots_txt: true
+    max_pages_per_domain: 100
+    
+  # Provider-specific crawl configurations
+  providers:
+    - name: gemini
+      base_url: "https://ai.google.dev/docs/gemini-api"
+      patterns:
+        - endpoint: "url_pattern: /api/endpoints"
+        - rate_limit: "text_pattern: rate limit|requests per minute|quota"
+        - models: "text_pattern: available models|model list"
+      selectors:
+        - endpoint: "css: .api-endpoint"
+        - parameter: "css: .parameter-table tr"
+        - model: "css: .model-table tr"
+      
+    - name: deepseek
+      base_url: "https://platform.deepseek.com/api-reference"
+      patterns:
+        - endpoint: "url_pattern: /api/v1"
+        - rate_limit: "text_pattern: rate limit|requests per minute|quota"
+        - models: "text_pattern: available models|model list"
+      selectors:
+        - endpoint: "css: .api-endpoint"
+        - parameter: "css: .parameter-table tr"
+        - model: "css: .model-table tr"
+      
+    - name: mistral
+      base_url: "https://docs.mistral.ai/api/"
+      patterns:
+        - endpoint: "url_pattern: /api/v1"
+        - rate_limit: "text_pattern: rate limit|requests per minute|quota"
+        - models: "text_pattern: available models|model list"
+      selectors:
+        - endpoint: "css: .api-endpoint"
+        - parameter: "css: .parameter-table tr"
+        - model: "css: .model-table tr"
+
+# Local model configuration
+local_models:
+  # Hugging Face models
+  huggingface:
+    cache_dir: "./models"
+    default_quantization: "int8"  # Options: none, int8, int4
+    models:
+      - name: "mistral-7b-instruct"
+        repo_id: "mistralai/Mistral-7B-Instruct-v0.2"
+        revision: "main"
+        device: "cuda"  # Options: cuda, cpu
+        quantization: "int8"
+        
+      - name: "llama-2-7b"
+        repo_id: "meta-llama/Llama-2-7b-chat-hf"
+        revision: "main"
+        device: "cuda"
+        quantization: "int8"
+        
+      - name: "phi-2"
+        repo_id: "microsoft/phi-2"
+        revision: "main"
+        device: "cuda"
+        quantization: "int8"
+  
+  # GGUF models
+  gguf:
+    binary_path: "./bin/llama.cpp"
+    models_dir: "./models/gguf"
+    models:
+      - name: "mistral-7b-instruct-gguf"
+        filename: "mistral-7b-instruct-v0.2.Q4_K_M.gguf"
+        url: "https://huggingface.co/TheBloke/Mistral-7B-Instruct-v0.2-GGUF/resolve/main/mistral-7b-instruct-v0.2.Q4_K_M.gguf"
+        context_size: 4096
+        
+      - name: "llama-2-7b-gguf"
+        filename: "llama-2-7b-chat.Q4_K_M.gguf"
+        url: "https://huggingface.co/TheBloke/Llama-2-7B-Chat-GGUF/resolve/main/llama-2-7b-chat.Q4_K_M.gguf"
+        context_size: 4096
+
+# Hardware configuration
+hardware:
+  cuda_devices: [0]  # List of CUDA device IDs to use
+  cpu_threads: 8     # Number of CPU threads to use
+  memory_limit: 8    # Memory limit in GB
